@@ -9,6 +9,8 @@ const createError = ({ status = 500, message = "Something went wrong" }) => {
 
 module.exports = {
   createError,
+  CREATED: 201,
+  OK: 200,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
   FORBIDDEN: 403,

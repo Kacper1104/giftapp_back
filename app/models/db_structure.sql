@@ -10,20 +10,12 @@ create table users(
     changed_date timestamp not null default current_timestamp on update current_timestamp
 ) engine = innodb;
 
-create table roles(
-    id int not null,
-    primary key(id),
-    name varchar(15) not null,
-    created_date timestamp not null default current_timestamp,
-    changed_date timestamp not null default current_timestamp on update current_timestamp
-) engine = innodb;
-
 create table events(
     id int not null,
     primary key(id),
     name varchar(255),
     start_date date not null,
-    is_actice bool not null default true,
+    is_active bool not null default true,
     created_date timestamp not null default current_timestamp,
     changed_date timestamp not null default current_timestamp on update current_timestamp
 ) engine = innodb;
@@ -58,10 +50,7 @@ create table reservations(
 create table event_assignments(
     id int not null, 
     primary key(id), 
-    role_id int not null, 
-    index rol_ind (role_id), 
-    foreign key (role_id) 
-        references roles(id),
+    role enum("Organiser", "Guest") not null default "Guest",
     user_id int not null, 
     index use_ind (user_id),
     foreign key (user_id)

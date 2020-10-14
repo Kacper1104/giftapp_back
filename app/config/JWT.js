@@ -15,7 +15,7 @@ const publicKEY = fs.readFileSync(
 const generateJWTToken = (user) => {
   //payload
   var payload = {
-    id: user.id.status,
+    id: user.id,
     isAdmin: user.isAdmin,
     name: user.email
   };
@@ -29,6 +29,11 @@ const generateJWTToken = (user) => {
   };
   return jwt.sign(payload, privateKEY, signOptions);
 };
+
+function getUserIDFromJWT(req) {
+  const token = req.header(`x-auth-token`);
+  return jwt.decode(token).id;
+}
 
 function auth(req, res, next) {
   if (requiresAuth) {
@@ -48,3 +53,4 @@ function auth(req, res, next) {
 
 exports.generateJWTToken = generateJWTToken;
 exports.auth = auth;
+exports.getUserIDFromJWT = getUserIDFromJWT;
