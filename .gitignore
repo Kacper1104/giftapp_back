@@ -10,9 +10,8 @@
 *.userosscache
 *.sln.docstates
 node_modules/
-config/private.key
-config/public.key
-congig/db_config.js
+*.key
+app/config/db_config.js
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
