@@ -24,7 +24,7 @@ module.exports = (app) => {
       const hash = bcrypt.hashSync(password, saltRounds);
       //INSERT RECORD
       query =
-        "INSERT INTO users (id, email, name, password, account_confirmed) VALUES (?, ?, ?, ?, ?, ?)";
+        "INSERT INTO users (id, email, name, password, account_confirmed) VALUES (?, ?, ?, ?, ?)";
       var params = [latestId, email, name, hash, true];
       sql.query(query, params);
       const _user = { id: latestId, isAdmin: false, email: email };
