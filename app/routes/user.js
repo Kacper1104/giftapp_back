@@ -9,8 +9,8 @@ const saltRounds = 10;
 module.exports = (app) => {
   app.post("/users", async (req, res) => {
     try{
-      const { role_id, email, name, password } = req.body;
-      if (!role_id || !email || !name || !password)
+      const { email, name, password } = req.body;
+      if ( !email || !name || !password)
         return res.status(BAD_REQUEST).send("Incomplete request");
       //CHECK FOR DUPLICATES
       var query = "SELECT * FROM users WHERE email = ? LIMIT 0, 1;";
@@ -24,8 +24,8 @@ module.exports = (app) => {
       const hash = bcrypt.hashSync(password, saltRounds);
       //INSERT RECORD
       query =
-        "INSERT INTO users (id, role_id, email, name, password, account_confirmed) VALUES (?, ?, ?, ?, ?, ?)";
-      var params = [latestId, role_id, email, name, hash, true];
+        "INSERT INTO users (id, email, name, password, account_confirmed) VALUES (?, ?, ?, ?, ?, ?)";
+      var params = [latestId, email, name, hash, true];
       sql.query(query, params);
       const _user = { id: latestId, isAdmin: false, email: email };
       return res.status(CREATED).json(generateJWTToken(_user));
