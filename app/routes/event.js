@@ -69,4 +69,22 @@ module.exports = (app) => {
         res.status(BAD_REQUEST).send("Bad request")
       }
   });
+
+  app.get("/events", auth, async (req, res) => {
+    try{
+      const userId = getUserIDFromJWT(req);
+      const offset = parseInt(req.header(`offset`));
+      const pageSize = parseInt(req.header(`pageSize`));
+      if (!offset || !pageSize) 
+        return res.status(500).send("Incomplete request - paging missing");
+      //retrive event elements
+      var query = "SELECT * FROM events LEFT JOIN event_assignments ON events.id = event_assignments.event_id WHERE event_assignments.user_id = ? ORDER BY events.created_date DESC LIMIT ? OFFSET ?;";
+      const lines = await sql.query(query, [userId, pageSize, offset-1]);
+      return res.status(200).json(lines);
+    }
+    catch(error){
+      console.log(error);
+      res.status(BAD_REQUEST).send("Bad request");
+    }
+  });
 };
