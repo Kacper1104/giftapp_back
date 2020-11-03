@@ -38,7 +38,9 @@ function getUserIDFromJWT(req) {
 function auth(req, res, next) {
   if (requiresAuth) {
     const token = req.header(`x-auth-token`);
-    if (!token) return res.status(401).send(`Access denied. No token provided`);
+    if (!token) { 
+      return res.status(401).send(`Access denied. No token provided`);
+    }
 
     try {
       const decoded = jwt.verify(token, privateKEY, { algorithms: ["RS256"] });
@@ -46,7 +48,7 @@ function auth(req, res, next) {
 
       next();
     } catch (ex) {
-      return res.status(400).send(`Invalid token`);
+      return res.status(401).send(`Invalid token`);
     }
   } else return;
 }

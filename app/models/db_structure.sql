@@ -29,6 +29,7 @@ create table gifts(
         references events(id)
         on delete cascade,
     name varchar(255) not null,
+    description text not null,
     link varchar(255),
     picture varchar(255),
     created_date timestamp not null default current_timestamp,

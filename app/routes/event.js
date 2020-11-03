@@ -10,7 +10,8 @@ module.exports = (app) => {
     try{
       const userId = getUserIDFromJWT(req);
       const { event_name, start_date } = req.body;
-      if (!event_name || !start_date)
+      const _start_date = start_date.substr(0,10);
+      if (!event_name || !_start_date)
         return res.status(500).send("Incomplete request");
       //CHECK FOR LATEST EVENT ID
       var query = "SELECT * FROM events ORDER BY id DESC LIMIT 0, 1;";
@@ -27,12 +28,13 @@ module.exports = (app) => {
       //INSERT EVENT RECORD
       query =
         "INSERT INTO events (id, name, start_date) VALUES (?, ?, ?);";
-      var params = [newIdEvent, event_name, start_date];
-      sql.query(query, params);
+      var params = [newIdEvent, event_name, _start_date];
+      await sql.query(query, params);
       //INSERT EVENT ASSIGNMENT RECORD
       query = "INSERT INTO event_assignments (id, role, user_id, event_id) VALUES (?, ?, ?, ?);";
       params = [newIdEventAssignment, ROLE.ORGANISER, userId, newIdEvent];
-      sql.query(query, params); 
+      await sql.query(query, params);
+       
       //END
       return res.status(CREATED).send("Created");
     }
@@ -80,6 +82,23 @@ module.exports = (app) => {
       //retrive event elements
       var query = "SELECT * FROM events LEFT JOIN event_assignments ON events.id = event_assignments.event_id WHERE event_assignments.user_id = ? ORDER BY events.created_date DESC LIMIT ? OFFSET ?;";
       const lines = await sql.query(query, [userId, pageSize, offset-1]);
+      return res.status(200).json(lines);
+    }
+    catch(error){
+      console.log(error);
+      res.status(BAD_REQUEST).send("Bad request");
+    }
+  });
+
+  app.get("/events/:id", auth, async (req, res) => {
+    try{
+      const eventId = req.params.id;
+      const userId = getUserIDFromJWT(req);
+      if (!eventId) 
+        return res.status(500).send("Incomplete request - event id missing");
+      //retrive event elements
+      var query = "SELECT * FROM events LEFT JOIN event_assignments ON events.id = event_assignments.event_id WHERE event_assignments.user_id = ?  AND event.id = ?LIMIT 0 1;";
+      const lines = await sql.query(query, [userId, eventId]);
       return res.status(200).json(lines);
     }
     catch(error){
