@@ -40,7 +40,7 @@ create table reservations(
     id int not null,
     primary key(id),
     gift_id int not null,
-    index gif_ind (gift_id),
+    max_users int not null default 1,
     foreign key(gift_id)
         references gifts(id)
         on delete cascade,
