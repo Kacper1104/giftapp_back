@@ -44,20 +44,20 @@ module.exports = (app) => {
         }
     });
 
-    app.get("/gifts/:eventId", auth, async (req, res) => {
-        try {
-            const eventId = req.params.eventId;
-            const userId = getUserIDFromJWT(req);
-            if (!eventId)
-                return res.status(500).send("Incomplete request - event id missing");
-            //retrive event elements
-            var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, r.max_users AS res_max_contributors, r.changed_date AS res_changed_date, IF(r.id IS NOT NULL, true, false) AS is_reserved, IF(a.user_id = ?, true, false) AS is_user_res FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON a.reservation_id = r.id WHERE g.event_id = ?;";
-            const lines = await sql.query(query, [userId, eventId]);
-            return res.status(200).json(lines);
-        }
-        catch (error) {
-            console.log(error);
-            res.status(BAD_REQUEST).send("Bad request");
-        }
-    });
+    // app.get("/gifts/:eventId", auth, async (req, res) => {
+    //     try {
+    //         const eventId = req.params.eventId;
+    //         const userId = getUserIDFromJWT(req);
+    //         if (!eventId)
+    //             return res.status(500).send("Incomplete request - event id missing");
+    //         //retrive event elements
+    //         var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, r.max_users AS res_max_contributors, r.changed_date AS res_changed_date, IF(r.id IS NOT NULL, true, false) AS is_reserved, IF(a.user_id = ?, true, false) AS is_user_res FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON a.reservation_id = r.id WHERE g.event_id = ?;";
+    //         const lines = await sql.query(query, [userId, eventId]);
+    //         return res.status(200).json(lines);
+    //     }
+    //     catch (error) {
+    //         console.log(error);
+    //         res.status(BAD_REQUEST).send("Bad request");
+    //     }
+    // });
 };

@@ -65,14 +65,16 @@ module.exports = (app) => {
     //     }
     // });
 
-    app.get("/gifts/:eventId", auth, async (req, res) => {
+    app.get("/gifts", auth, async (req, res) => {
         try {
-            const eventId = req.params.eventId;
+            //console.log("REQ COUGHT!");
+            const eventId = req.header("eventId");
+            //console.log(eventId);
             const userId = getUserIDFromJWT(req);
             if (!eventId)
                 return res.status(500).send("Incomplete request - event id missing");
             //retrive event elements
-            var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, r.max_users AS res_max_contributors, r.changed_date AS res_changed_date, IF(r.id IS NOT NULL, true, false) AS is_reserved, IF(a.user_id = ?, true, false) AS is_user_res FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON a.reservation_id = r.id WHERE g.event_id = ?;";
+            var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, MIN(r.max_users) AS res_max_contributors, MAX(r.changed_date) AS res_changed_date, IF(COUNT(r.id) > 0, true, false) AS is_reserved, SUM(IF(a.user_id = ?, 1, 0)) AS is_user_res, COUNT(r.id) AS res_count FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON a.reservation_id = r.id WHERE g.event_id = ? GROUP BY g.id;";
             const lines = await sql.query(query, [userId, eventId]);
             return res.status(200).json(lines);
         }
