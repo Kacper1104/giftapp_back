@@ -23,8 +23,7 @@ module.exports = (app) => {
             if (checkPrivilige.length !== 0)
                 return res.status(401).send(UNAUTHORIZED + ": User is not organiser of this event.")
             //INSERT GIFT RECORD
-            query =
-                "INSERT INTO gifts (id, event_id, name, desctription) VALUES (?, ?, ?, ?);";
+            query = "INSERT INTO gifts (id, event_id, name, description) VALUES (?, ?, ?, ?);";
             var params = [newIdGift, event_id, name, description];
             await sql.query(query, params);
             //END
@@ -36,34 +35,6 @@ module.exports = (app) => {
         }
     });
 
-    // app.patch("/gift/:id", async (req, res) => {
-    //     try {
-    //         const userId = getUserIDFromJWT(req);
-
-    //         const eventId = req.params.id;
-    //         const { event_name, start_date, changed_date } = req.body;
-    //         if (!eventId || !event_name || !start_date)
-    //             return res.status(500).send("Incomplete request");
-    //         var query = "UPDATE events INNER JOIN event_assignments ON events.id = event_assignments.event_id SET events.name = ?, events.start_date = ? WHERE event_assignments.user_id = ? AND event_assignments.role = ? AND event_assignments.event_id = ? AND events.changed_date < ?;";
-    //         var params = [event_name, start_date, userId, ROLE.ORGANISER, eventId, changed_date];
-    //         //['urodziny', '2021-04-25', 1, 'Organiser', 1, '2020-10-15 02:00:00']
-    //         const repsonse = await sql.query(query, params)
-    //         if (repsonse.affectedRows === 0) {
-    //             //CHECK FOR CONFLICT
-    //             query = "SELECT * FROM events INNER JOIN event_assignments ON events.id WHERE event_assignments.user_id = ? AND event_assignments.role = ? AND event_assignments.event_id = ? AND events.changed_date > ?;";
-    //             params = [userId, ROLE.ORGANISER, eventId, changed_date];
-    //             const conflict = await sql.query(query, params);
-    //             if (conflict.affectedRows !== 0)
-    //                 return res.status(CONFLICT).send("Conflicted.");
-    //             return res.status(BAD_REQUEST).send("Bad request.");
-    //         }
-    //         return res.status(OK).send("OK.")
-    //     }
-    //     catch (error) {
-    //         console.log(error);
-    //         res.status(BAD_REQUEST).send("Bad request")
-    //     }
-    // });
 
     app.get("/gifts", auth, async (req, res) => {
         try {
@@ -74,7 +45,7 @@ module.exports = (app) => {
             if (!eventId)
                 return res.status(500).send("Incomplete request - event id missing");
             //retrive event elements
-            var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, MIN(r.max_users) AS res_max_contributors, MAX(r.changed_date) AS res_changed_date, IF(COUNT(r.id) > 0, true, false) AS is_reserved, SUM(IF(a.user_id = ?, 1, 0)) AS is_user_res, COUNT(r.id) AS res_count FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON a.reservation_id = r.id WHERE g.event_id = ? GROUP BY g.id;";
+            var query = "SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, MIN(r.max_users) AS res_max_contributors, MAX(r.changed_date) AS res_changed_date, IF(COUNT(r.id) > 0, true, false) AS is_reserved, SUM(IF(a.user_id = ?, 1, 0)) AS is_user_res, COUNT(r.id) AS res_count FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON r.assignment_id = a.id WHERE g.event_id = ? GROUP BY g.id;";
             const lines = await sql.query(query, [userId, eventId]);
             return res.status(200).json(lines);
         }

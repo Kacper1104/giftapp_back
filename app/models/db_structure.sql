@@ -36,17 +36,6 @@ create table gifts(
     changed_date timestamp not null default current_timestamp on update current_timestamp
 ) engine=innodb;
 
-create table reservations(
-    id int not null,
-    primary key(id),
-    gift_id int not null,
-    max_users int not null default 1,
-    foreign key(gift_id)
-        references gifts(id)
-        on delete cascade,
-    created_date timestamp not null default current_timestamp,
-    changed_date timestamp not null default current_timestamp on update current_timestamp
-) engine=innodb;
 
 create table event_assignments(
     id int not null, 
@@ -62,10 +51,40 @@ create table event_assignments(
     foreign key (event_id)
         references events(id)
         on delete cascade,
-    reservation_id int,
-    index res_ind (reservation_id),
-    foreign key (reservation_id)
-        references reservations(id),
     created_date timestamp not null default current_timestamp,
     changed_date timestamp not null default current_timestamp on update current_timestamp
     ) engine=innodb;
+
+create table reservations(
+    id int not null,
+    primary key(id),
+    contact_number varchar(255),
+    max_users int not null default 1,
+    description text,
+    gift_id int not null,
+    index gif_ind (gift_id),
+    foreign key(gift_id)
+        references gifts(id)
+        on delete cascade,
+    assignment_id int not null,
+    index ass_ind (assignment_id),
+    foreign key(assignment_id)
+    references event_assignments(id)
+    on delete cascade,
+    created_date timestamp not null default current_timestamp,
+    changed_date timestamp not null default current_timestamp on update current_timestamp
+) engine=innodb;
+
+create table codes(
+    id int not null,
+    primary key(id),
+    code varchar(50) not null,
+    is_active bool not null,
+    event_id int not null,
+    index event_ind (event_id),
+    foreign key(event_id)
+    references events(id)
+    on delete cascade,
+    created_date timestamp not null default current_timestamp,
+    changed_date timestamp not null default current_timestamp on update current_timestamp
+) engine=innodb;
