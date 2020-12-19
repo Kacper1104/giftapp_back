@@ -79,7 +79,8 @@ create table codes(
     id int not null,
     primary key(id),
     code varchar(50) not null,
-    is_active bool not null,
+    is_active bool not null default true,
+    invitee varchar(50) not null,
     event_id int not null,
     index event_ind (event_id),
     foreign key(event_id)

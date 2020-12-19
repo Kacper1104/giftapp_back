@@ -44,33 +44,47 @@ module.exports = (app) => {
     }
   });
 
-  // app.patch("/events/:id", async (req, res) => {
-  //   try {
-  //     const userId = getUserIDFromJWT(req);
-  //     const eventId = req.params.id;
-  //     const { event_name, start_date, changed_date } = req.body;
-  //     if (!eventId || !event_name || !start_date)
-  //       return res.status(500).send("Incomplete request");
-  //     var query = "UPDATE events INNER JOIN event_assignments ON events.id = event_assignments.event_id SET events.name = ?, events.start_date = ? WHERE event_assignments.user_id = ? AND event_assignments.role = ? AND event_assignments.event_id = ? AND events.changed_date < ?;";
-  //     var params = [event_name, start_date, userId, ROLE.ORGANISER, eventId, changed_date];
-  //     //['urodziny', '2021-04-25', 1, 'Organiser', 1, '2020-10-15 02:00:00']
-  //     const repsonse = await sql.query(query, params)
-  //     if (repsonse.affectedRows === 0) {
-  //       //CHECK FOR CONFLICT
-  //       query = "SELECT * FROM events INNER JOIN event_assignments ON events.id WHERE event_assignments.user_id = ? AND event_assignments.role = ? AND event_assignments.event_id = ? AND events.changed_date > ?;";
-  //       params = [userId, ROLE.ORGANISER, eventId, changed_date];
-  //       const conflict = await sql.query(query, params);
-  //       if (conflict.affectedRows !== 0)
-  //         return res.status(CONFLICT).send("Conflicted.");
-  //       return res.status(BAD_REQUEST).send("Bad request.");
-  //     }
-  //     return res.status(OK).send("OK.")
-  //   }
-  //   catch (error) {
-  //     console.log(error);
-  //     res.status(BAD_REQUEST).send("Bad request")
-  //   }
-  // });
+  app.post("/events/join", auth, async(req, res) => {
+    try{
+      const userId = getUserIDFromJWT(req);
+      const code = req.header("code");
+      //console.log(code);
+      if(!code)
+        return res.status(500).send("Incomplete request - code missing");
+      //VALIDATE CODE
+      var query = "SELECT * FROM codes WHERE code = ? AND is_active = 1 LIMIT 0, 1;";
+      const codeExists = await sql.query(query, code);
+      if (codeExists.length === 0)
+        return res.status(BAD_REQUEST).send("Code not found or inactive")
+      //GET EVENT
+      query = "SELECT id FROM events WHERE id = ? AND is_active = 1 LIMIT 0, 1;";
+      const event = await sql.query(query, code);
+      if (event.length === 0)
+        return res.status(BAD_REQUEST).send("Event not found or inactive")
+      //CHECK IF USER IS IN THIS EVENT
+      query = "SELECT id FROM event_assignments WHERE event_id = ? AND user_id = ? LIMIT 0, 1;";
+      const assignment = await sql.query(query, [event[0].id, userId]);
+      if (assignment.length !== 0)
+        return res.status(CONFLICT).send("User already assigned.")
+      //CHECK FOR LATEST EVENT_ASSIGNMENT ID
+      query = "SELECT * FROM event_assignments ORDER BY id DESC LIMIT 0, 1;"
+      const latestIdEventAssignment = await sql.query(query);
+      const newIdEventAssignment = latestIdEventAssignment.length !== 0 ? latestIdEventAssignment[0].id + 1 : 1;
+      //CREATE ASSIGNMENT
+      query = "INSERT INTO event_assignments (id, role , user_id, event_id) VALUES (?, ?, ?, ?);";
+      var params = [newIdEventAssignment, ROLE.GUEST, userId, event[0].id];
+      await sql.query(query, params);
+      //DEACTIVETE CODE
+      query = "UPDATE codes SET is_active = false WHERE id = ?;"
+      await sql.query(query, codeExists[0].id);
+      return res.status(200).send("OK");
+      //END
+    }
+    catch (error) {
+      console.log(error);
+      res.status(BAD_REQUEST).send("Bad request");
+    }
+  });
 
   app.get("/events", auth, async (req, res) => {
     try {
