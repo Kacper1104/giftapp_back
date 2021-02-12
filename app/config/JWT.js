@@ -3,11 +3,11 @@ const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const requiresAuth = true;
 //private and public key
-const privateKEY = fs.readFileSync(
+const privateKEY = process.env.JWT_PRIVATE_KEY || fs.readFileSync(
   path.join(__dirname, "../config/private.key"),
   "utf8"
 );
-const publicKEY = fs.readFileSync(
+const publicKEY = process.env.JWT_PUBLIC_KEY || fs.readFileSync(
   path.join(__dirname, "../config/public.key"),
   "utf8"
 );
