@@ -30,8 +30,10 @@ create table gifts(
         on delete cascade,
     name varchar(255) not null,
     description text not null,
-    link varchar(255),
-    picture varchar(255),
+    model varchar(255),
+    price decimal(9,2),
+    link text,
+    picture text,
     created_date timestamp not null default current_timestamp,
     changed_date timestamp not null default current_timestamp on update current_timestamp
 ) engine=innodb;

@@ -15,7 +15,7 @@ module.exports = (app) => {
 	app.post("/gifts", auth, async (req, res) => {
 		try {
 			const userId = getUserIDFromJWT(req);
-			const { event_id, name, description, picture } = req.body;
+			const { event_id, name, description, price, model, link } = req.body;
 			if (!event_id || !name || !description)
 				return res.status(500).send("Incomplete request");
 			//CHECK FOR LATEST GIFT ID
@@ -30,13 +30,18 @@ module.exports = (app) => {
 				return res
 					.status(401)
 					.send(UNAUTHORIZED + ": User is not organiser of this event.");
-			//SEND IMAGE TO STORAGE
-			if (picture) {
-			}
 			//INSERT GIFT RECORD
 			query =
-				"INSERT INTO gifts (id, event_id, name, description) VALUES (?, ?, ?, ?);";
-			var params = [newIdGift, event_id, name, description];
+				"INSERT INTO gifts (id, event_id, name, description, price, model, link) VALUES (?, ?, ?, ?, ?, ?, ?);";
+			var params = [
+				newIdGift,
+				event_id,
+				name,
+				description,
+				price ? price.replace(",", ".") : null,
+				model ? model : null,
+				link ? link : null
+			];
 			await sql.query(query, params);
 			//END
 			return res.status(CREATED).send({ gift_id: newIdGift });
@@ -81,7 +86,7 @@ module.exports = (app) => {
 				return res.status(500).send("Incomplete request - event id missing");
 			//retrive event elements
 			var query =
-				"SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, MIN(r.max_users) AS res_max_contributors, MAX(r.changed_date) AS res_changed_date, IF(COUNT(r.id) > 0, true, false) AS is_reserved, SUM(IF(a.user_id = ?, 1, 0)) AS is_user_res, COUNT(r.id) AS res_count, g.picture AS gift_picture FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON r.assignment_id = a.id WHERE g.event_id = ? GROUP BY g.id;";
+				"SELECT g.id AS gift_id, g.name AS gift_name, g.description AS gift_description, g.changed_date AS gift_changed_date, MIN(r.max_users) AS res_max_contributors, MAX(r.changed_date) AS res_changed_date, IF(COUNT(r.id) > 0, true, false) AS is_reserved, SUM(IF(a.user_id = ?, 1, 0)) AS is_user_res, COUNT(r.id) AS res_count, g.picture AS gift_picture, g.price AS gift_price, g.model AS gift_model, g.link AS gift_link FROM gifts g LEFT JOIN reservations r ON r.gift_id = g.id LEFT JOIN event_assignments a ON r.assignment_id = a.id WHERE g.event_id = ? GROUP BY g.id;";
 			const lines = await sql.query(query, [userId, eventId]);
 			return res.status(200).json(lines);
 		} catch (error) {
