@@ -9,7 +9,7 @@ module.exports = (app) => {
     app.post("/reservations", auth, async (req, res) => {
         try {
             const userId = getUserIDFromJWT(req);
-            const { event_id, gift_id, max_users, contact_number } = req.body;
+            const { event_id, gift_id, max_users, contact_number, description } = req.body;
             if (!event_id || !gift_id || !max_users)
                 return res.status(500).send("Incomplete request");
 
@@ -46,8 +46,8 @@ module.exports = (app) => {
                 return res.status(400).send(BAD_REQUEST + "User assignment to an event not defined.")
             }
             //INSERT RESERVATION RECORD
-            query = "INSERT INTO reservations (id, gift_id, assignment_id, contact_number, max_users) VALUES (?, ?, ?, ?, ?);";
-            var params = [newIdRes, gift_id, assignment[0].id, !contact_number ? null : contact_number, res_max_users];
+            query = "INSERT INTO reservations (id, gift_id, assignment_id, contact_number, max_users, description) VALUES (?, ?, ?, ?, ?, ?);";
+            var params = [newIdRes, gift_id, assignment[0].id, !contact_number ? null : contact_number, res_max_users, description];
             await sql.query(query, params);
             //END
             return res.status(CREATED).send("Created");
