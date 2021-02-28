@@ -98,6 +98,7 @@ module.exports = (app) => {
                 }
             }
             query = query.substring(0, query.length - 3) + ";";
+            console.log("DEBUG -------------------------- " + query);
             await sql.query(query, params);
             return res.status(200).send("Deleted");
         } catch (error) {
