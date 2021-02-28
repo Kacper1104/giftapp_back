@@ -88,17 +88,16 @@ module.exports = (app) => {
                 return res.status(409).send(BAD_REQUEST + ": Bad request, user has no reservations for this gift.")
             }
             //DELETE RESERVATION
-            var query = "DELETE FROM reservations r WHERE ";
+            var query = "DELETE FROM reservations WHERE ";
             var params = [];
             for (var i = 0; i < reservation.length; i++) {
                 if (!reservation[i]);
                 else {
-                    query += "r.id = ? OR ";
+                    query += "id = ? OR ";
                     params.push(reservation[i].id);
                 }
             }
-            query = query.substring(0, query.length - 3) + ";";
-            console.log("DEBUG -------------------------- " + query);
+            query = query.substring(0, query.length - 4) + ";";
             await sql.query(query, params);
             return res.status(200).send("Deleted");
         } catch (error) {
