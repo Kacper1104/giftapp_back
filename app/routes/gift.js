@@ -94,4 +94,14 @@ module.exports = (app) => {
 			res.status(BAD_REQUEST).send("Bad request");
 		}
 	});
+
+	app.delete("/gifts", auth, async (req, res) => {
+		try {
+			throw new Error("Not implemented error");
+
+		} catch (error) {
+			console.log(error);
+			res.status(BAD_REQUEST).send("Bad request");
+		}
+	});
 };
