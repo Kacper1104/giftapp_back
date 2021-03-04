@@ -75,9 +75,9 @@ module.exports = (app) => {
       var params = [newIdEventAssignment, ROLE.GUEST, userId, event[0].id];
       await sql.query(query, params);
       //DEACTIVETE CODE
-      query = "UPDATE codes SET is_active = false WHERE id = ?;"
-      await sql.query(query, codeExists[0].id);
-      return res.status(200).send("OK");
+      // query = "UPDATE codes SET is_active = false WHERE id = ?;"
+      // await sql.query(query, codeExists[0].id);
+      // return res.status(200).send("OK");
       //END
     }
     catch (error) {
