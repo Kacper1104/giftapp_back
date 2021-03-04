@@ -94,7 +94,7 @@ module.exports = (app) => {
       if (!offset || !pageSize)
         return res.status(500).send("Incomplete request - paging missing");
       //retrive event elements
-      var query = "SELECT e.id, e.name, e.start_date, e.is_active, a.id, a.role, h.name AS host FROM events e LEFT JOIN event_assignments a ON e.id = a.event_id LEFT JOIN event_assignments ha ON ha.role = 'Organiser' LEFT JOIN users h ON h.id = ha.user_id WHERE a.user_id = ? ORDER BY e.created_date DESC LIMIT ? OFFSET ?;";
+      var query = "SELECT e.id, e.name, e.start_date, e.is_active, e.created_date, e.changed_date, a.role, a.user_id, a.event_id, h.name AS host FROM events e LEFT JOIN event_assignments a ON e.id = a.event_id LEFT JOIN event_assignments ha ON ha.event_id = e.id LEFT JOIN users h ON h.id = ha.user_id  WHERE ha.role='Organiser' AND a.user_id = ? ORDER BY e.created_date DESC LIMIT ? OFFSET ?;";
       const lines = await sql.query(query, [userId, pageSize, offset - 1]);
       return res.status(200).json(lines);
     }
