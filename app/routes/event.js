@@ -44,12 +44,12 @@ module.exports = (app) => {
     }
   });
 
-  app.post("/events/join", auth, async(req, res) => {
-    try{
+  app.post("/events/join", auth, async (req, res) => {
+    try {
       const userId = getUserIDFromJWT(req);
       const code = req.header("code");
       //console.log(code);
-      if(!code)
+      if (!code)
         return res.status(500).send("Incomplete request - code missing");
       //VALIDATE CODE
       var query = "SELECT * FROM codes WHERE code = ? AND is_active = 1 LIMIT 0, 1;";
@@ -94,7 +94,7 @@ module.exports = (app) => {
       if (!offset || !pageSize)
         return res.status(500).send("Incomplete request - paging missing");
       //retrive event elements
-      var query = "SELECT * FROM events e LEFT JOIN event_assignments a ON e.id = a.event_id WHERE a.user_id = ? ORDER BY e.created_date DESC LIMIT ? OFFSET ?;";
+      var query = "SELECT e.id, e.name, e.start_date, e.is_active, a.id, a.role, h.name AS host FROM events e LEFT JOIN event_assignments a ON e.id = a.event_id LEFT JOIN event_assignments ha ON ha.role = 'Organiser' LEFT JOIN users h ON h.id = ha.user_id WHERE a.user_id = ? ORDER BY e.created_date DESC LIMIT ? OFFSET ?;";
       const lines = await sql.query(query, [userId, pageSize, offset - 1]);
       return res.status(200).json(lines);
     }
