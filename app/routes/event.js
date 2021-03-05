@@ -77,7 +77,7 @@ module.exports = (app) => {
       //DEACTIVETE CODE
       // query = "UPDATE codes SET is_active = false WHERE id = ?;"
       // await sql.query(query, codeExists[0].id);
-      // return res.status(200).send("OK");
+      return res.status(200).send({ eventId: event[0].id });
       //END
     }
     catch (error) {
