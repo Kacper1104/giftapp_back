@@ -97,7 +97,21 @@ module.exports = (app) => {
 
 	app.delete("/gifts", auth, async (req, res) => {
 		try {
-			throw new Error("Not implemented error");
+			const userId = getUserIDFromJWT(req);
+			const gift_id = req.header("gift_id");
+			if (!gift_id)
+				return res.status(500).send("Incomplete request");
+			//CHECK IF USER IS GUEST
+			var query = "SELECT a.id FROM event_assignments a LEFT JOIN events e ON e.id=a.event_id LEFT JOIN users u on u.id = a.user_id LEFT JOIN gifts g ON g.event_id=e.id WHERE u.id = ? and g.id = ? AND a.role = ? LIMIT 0, 1;";
+			const checkPrivilige = await sql.query(query, [userId, gift_id, ROLE.GUEST]);
+			if (checkPrivilige.length !== 0)
+				return res
+					.status(401)
+					.send(UNAUTHORIZED + ": User is not organiser of this event.");
+			//DELETE RECORD
+			query = "DELETE FROM gifts WHERE id = ?;";
+			await sql.query(query, gift_id);
+			return res.status(200).send("Deleted");
 
 		} catch (error) {
 			console.log(error);
